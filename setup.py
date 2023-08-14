@@ -7,6 +7,9 @@ from catkin_pkg.python_setup import generate_distutils_setup
 setup_args = generate_distutils_setup(
   packages=['ntrip_client'],
   package_dir={'': 'src'},
+  install_requires=[
+    'nrf24~=2.0.0'
+  ]
 )
 
 setup(**setup_args)

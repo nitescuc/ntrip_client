@@ -85,32 +85,42 @@ class NTRIPRos:
     self._rtcm_timer = None
     self._rtcm_pub = rospy.Publisher('rtcm', self._rtcm_message_type, queue_size=10)
 
-    # Initialize the client
-    self._client = NTRIPClient(
-      host=host,
-      port=port,
-      mountpoint=mountpoint,
-      ntrip_version=ntrip_version,
-      username=username,
-      password=password,
-      logerr=rospy.logerr,
-      logwarn=rospy.logwarn,
-      loginfo=rospy.loginfo,
-      logdebug=rospy.logdebug
-    )
+    if self.get_param('nrf24_slave', False):
+      self._client = NRF24Client(
+        self.get_param('nrf24_address', 'NTRIP'),
+        self.get_param('nrf24_channel', 100),
+        logerr=rospy.logerr,
+        logwarn=rospy.logwarn,
+        loginfo=rospy.loginfo,
+        logdebug=rospy.logdebug
+      )
+    else:
+      # Initialize the client
+      self._client = NTRIPClient(
+        host=host,
+        port=port,
+        mountpoint=mountpoint,
+        ntrip_version=ntrip_version,
+        username=username,
+        password=password,
+        logerr=rospy.logerr,
+        logwarn=rospy.logwarn,
+        loginfo=rospy.loginfo,
+        logdebug=rospy.logdebug
+      )
 
-    # Get some SSL parameters for the NTRIP client
-    self._client.ssl = rospy.get_param('~ssl', False)
-    self._client.cert = rospy.get_param('~cert', None)
-    self._client.key = rospy.get_param('~key', None)
-    self._client.ca_cert = rospy.get_param('~ca_cert', None)
+      # Get some SSL parameters for the NTRIP client
+      self._client.ssl = rospy.get_param('~ssl', False)
+      self._client.cert = rospy.get_param('~cert', None)
+      self._client.key = rospy.get_param('~key', None)
+      self._client.ca_cert = rospy.get_param('~ca_cert', None)
 
-    # Set parameters on the client
-    self._client.nmea_parser.nmea_max_length = rospy.get_param('~nmea_max_length', NMEA_DEFAULT_MAX_LENGTH)
-    self._client.nmea_parser.nmea_min_length = rospy.get_param('~nmea_min_length', NMEA_DEFAULT_MIN_LENGTH)
-    self._client.reconnect_attempt_max = rospy.get_param('~reconnect_attempt_max', NTRIPClient.DEFAULT_RECONNECT_ATTEMPT_MAX)
-    self._client.reconnect_attempt_wait_seconds = rospy.get_param('~reconnect_attempt_wait_seconds', NTRIPClient.DEFAULT_RECONNECT_ATEMPT_WAIT_SECONDS)
-    self._client.rtcm_timeout_seconds = rospy.get_param('~rtcm_timeout_seconds', NTRIPClient.DEFAULT_RTCM_TIMEOUT_SECONDS)
+      # Set parameters on the client
+      self._client.nmea_parser.nmea_max_length = rospy.get_param('~nmea_max_length', NMEA_DEFAULT_MAX_LENGTH)
+      self._client.nmea_parser.nmea_min_length = rospy.get_param('~nmea_min_length', NMEA_DEFAULT_MIN_LENGTH)
+      self._client.reconnect_attempt_max = rospy.get_param('~reconnect_attempt_max', NTRIPClient.DEFAULT_RECONNECT_ATTEMPT_MAX)
+      self._client.reconnect_attempt_wait_seconds = rospy.get_param('~reconnect_attempt_wait_seconds', NTRIPClient.DEFAULT_RECONNECT_ATEMPT_WAIT_SECONDS)
+      self._client.rtcm_timeout_seconds = rospy.get_param('~rtcm_timeout_seconds', NTRIPClient.DEFAULT_RTCM_TIMEOUT_SECONDS)
 
   def run(self):
     # Setup a shutdown hook
